@@ -1,4 +1,4 @@
-package scalagen.gen
+package scalagen.template
 
 package object string {
   import ScalaReservedWord._
