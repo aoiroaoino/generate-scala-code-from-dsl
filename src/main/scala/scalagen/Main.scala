@@ -42,6 +42,8 @@ object Main {
     )
   )
 
+  val sample3 = sample1 ++ sample2
+
   def main(args: Array[String]): Unit = {
 
     {
@@ -56,12 +58,9 @@ object Main {
     {
       println("===== ModelDrivenTranslator")
       val v = new ModelDrivenTranslator()
-      println("=== sample1:")
-      sample1.foreach(v.visit)
-      println(v.run())
-      println("=== sample2:")
-      sample2.foreach(v.visit)
-      println(v.run())
+      println("=== sample3:")
+      sample3.foreach(v.visit)
+      v.run().foreach(println)
     }
   }
 }

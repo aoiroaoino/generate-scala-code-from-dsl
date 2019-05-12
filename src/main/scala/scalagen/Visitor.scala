@@ -144,8 +144,10 @@ final class ScalaFile() {
 }
 
 class ModelDrivenTranslator {
-  private val file = new ScalaFile()
-  file.setRootPackage("package com.example\n")
+  private val modelFile = new ScalaFile()
+  modelFile.setRootPackage("package com.example.foo")
+  private val packageFile = new ScalaFile()
+  packageFile.setRootPackage("package com.example")
 
   def visit(node: Tree): String = node match {
     case t: NamedType => visit(t)
@@ -154,20 +156,22 @@ class ModelDrivenTranslator {
     case t: Intrinsic => visit(t)
   }
 
-  def run(): String = {
-    val s = file.asString()
-    file.clear()
-    s
+  def run(): List[String] = {
+    val s = modelFile.asString()
+    val t = packageFile.asString()
+    modelFile.clear()
+    packageFile.clear()
+    List(s, t)
   }
 
   protected def visit(t: NamedType): String = t match {
     case NamedType(name, tpe: Struct) =>
       val caseClass = s"final case class $name${this.visit(tpe)}"
-      file.addClass(caseClass)
+      modelFile.addClass(caseClass)
       caseClass
     case NamedType(name, tpe) =>
       val typeAlias = s"type $name = ${this.visit(tpe)}"
-      file.addTypeAlias(typeAlias)
+      packageFile.addTypeAlias(typeAlias)
       typeAlias
   }
   protected def visit(t: Intrinsic): String = t match {
