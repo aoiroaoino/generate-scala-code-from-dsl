@@ -13,7 +13,7 @@ object Main {
       "Account",
       Struct(
         "id"   -> TypeRef("AccountID"),
-        "name" -> Intrinsic.String(),
+        "name" -> Intrinsic.String()
       )
     )
   )

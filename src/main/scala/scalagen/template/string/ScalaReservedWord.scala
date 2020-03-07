@@ -43,6 +43,6 @@ object ScalaReservedWord {
     "var",
     "while",
     "with",
-    "yield",
+    "yield"
   )
 }

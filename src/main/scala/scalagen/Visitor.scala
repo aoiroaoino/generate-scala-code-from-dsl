@@ -53,7 +53,9 @@ class PrettyPrintVisitor() extends Visitor {
     buffer.append("\n")
     depth += 1
     for ((name, tpe) <- t.fields) {
-      if (first) { first = false } else buffer.append(",\n")
+      if (first) {
+        first = false
+      } else buffer.append(",\n")
       buffer.append(Indent * depth)
       buffer.append(s"$name: ")
       super.visit(tpe)
@@ -103,7 +105,9 @@ class SyntaxDirectedVisitor extends Visitor {
     var first = true
     buffer.append("(\n")
     for ((name, tpe) <- t.fields) {
-      if (first) { first = false } else buffer.append(",\n")
+      if (first) {
+        first = false
+      } else buffer.append(",\n")
       buffer.append(Indent)
       buffer.append(s"$name: ")
       super.visit(tpe)
