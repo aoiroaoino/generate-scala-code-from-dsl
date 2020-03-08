@@ -21,15 +21,20 @@ object GenerateScalaCode {
   def run(trees: List[Tree]): String = {
     // ネストした Struct から新たに型の定義を生成する
     val additionalDefnTypes = ExtractNestedStruct.run(trees)
+
     // 元の気に追加で型の定義を加え、ネストした Struct をフィールド名を capitalize した型名(型の参照)に置き換える
     val processedTrees = NestedStructToTypeName.run(trees ::: additionalDefnTypes)
+
     // Tree の中にネストした Struct が含まれていないか確認（ここまでの加工が十分テストされていれば不要）
     CheckIfNestedStructExists.run(processedTrees)
+
     // 展開しやすくなった木(Defn.Type) から case class や type alias を組み立てて出力
-    defnTypeToScalaCodes(processedTrees)
+    defnTypeToScalaCodes(processedTrees).mkString("\n")
   }
 
-  private def defnTypeToScalaCodes(trees: List[Tree]): String = {
+  def run(tree: Tree): String = run(tree :: Nil)
+
+  private def defnTypeToScalaCodes(trees: List[Tree]): List[String] = {
     val buf = new ListBuffer[String]
     new Traverser {
       override def traverse(tree: Tree): Unit = tree match {
@@ -42,7 +47,7 @@ object GenerateScalaCode {
           super.traverse(tree)
       }
     }.traverse(trees)
-    buf.toList.mkString("\n")
+    buf.toList
   }
 
   // accept を呼ばなければそれ以上は探索しないので、ノードに対して一対一のような変換をする場合は Visitor の方が便利ではある

@@ -48,15 +48,19 @@ object Main {
             Term.Name("address"),
             Type.Struct(
               Term.Field(Term.Name("postcode"), Type.String),
-              Term.Field(Term.Name("city"),
-                         Type.Struct(
-                           Term.Field(Term.Name("name"), Type.String),
-                         )),
-              Term.Field(Term.Name("pos"),
-                         Type.Struct(
-                           Term.Field(Term.Name("lat"), Type.Float),
-                           Term.Field(Term.Name("lon"), Type.Float)
-                         ))
+              Term.Field(
+                Term.Name("city"),
+                Type.Struct(
+                  Term.Field(Term.Name("name"), Type.String)
+                )
+              ),
+              Term.Field(
+                Term.Name("pos"),
+                Type.Struct(
+                  Term.Field(Term.Name("lat"), Type.Float),
+                  Term.Field(Term.Name("lon"), Type.Float)
+                )
+              )
             )
           ),
           Term.Field(Term.Name("isActive"), Type.Boolean)
@@ -111,9 +115,6 @@ object Main {
         println(v.result)
       }
     }
-    section("ModelDrivenTranslationVisitor") {
-      val v = new ModelDrivenTranslationVisitor
-    }
 
     // ==============================
     // === Traverser and Transformer
@@ -122,7 +123,14 @@ object Main {
 
     section("IntToFloatTransformer") {}
 
-    section("TwoPhaseTranslation") {}
+    // ==============================
+    // === Generate Scala codes
+    // ===
+    section("GenerateScalaCode") {
+      comment("いい感じに Scala のコードを生成することが出来ました") {
+        GenerateScalaCode.run(example.trees).tap(println)
+      }
+    }
   }
 
   private def section(s: String)(proc: => Unit): Unit =
