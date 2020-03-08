@@ -4,7 +4,7 @@ import scalagen.{Defn, Term, Tree, Type}
 
 abstract class Visitor {
 
-  final def accept(tree: Tree): Unit = tree match {
+  def accept(tree: Tree): Unit = tree match {
     case t: Type.Name              => visit(t)
     case t: Type.Struct            => visit(t)
     case t: Type.Intrinsic.Boolean => visit(t)

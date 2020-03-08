@@ -4,10 +4,10 @@ import scalagen.Type.Intrinsic
 
 import scala.util.chaining._
 
-// 匿名の Struct から field 名を用いてトップレベルで NamedType として展開させたいが、
-// 走査の流れと文字列構築の流れが結合している為、うまく展開できない。
-// 入力構文の走査の流れと文字列への変換の流れが結合してしまっている為、
-// 入れ子構造の展開が難しかったり、順序の並び替えやグルーピングに複数回の走査が必要になったりする。
+// 匿名の Struct から field 名を用いて Defn.Type(...) として展開したいが、
+// 走査する順序と文字列構築の流れが蜜結合している為、うまく展開できない。
+// 複数の buffer を用意したり、対応するモデルを用意することで回避可能であるが、
+// DSL に機能が追加され、展開ルールが増えるごとに複雑度は増してくる。
 class DirectTranslationVisitor extends Visitor {
   private[this] val buf = new StringBuffer()
 
@@ -38,7 +38,7 @@ class DirectTranslationVisitor extends Visitor {
     buf.append("final case class ")
     accept(t.name)
     // 組み込み型(Type.Intrinsic)や型名(Type.Name)だった場合は型エイリアスに展開したいが、
-    // accept に手を入れるかここで特別に振り分けを行う必要がある。
+    // Type が Struct かそれ以外かで分岐させる必要が出てくる。
     accept(t.typ)
     buf.append("\n")
   }
