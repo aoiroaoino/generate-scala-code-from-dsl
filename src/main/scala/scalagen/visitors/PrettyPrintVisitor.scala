@@ -24,7 +24,7 @@ class PrettyPrintVisitor(indentSpaceSize: Int) extends Visitor {
     val a   = t.fields.toArray
     for (i <- t.fields.indices) {
       buf.append(indent())
-      accept(a(i))
+      a(i).accept(this)
       if (i != len - 1) {
         buf.append(",")
       }
@@ -42,17 +42,17 @@ class PrettyPrintVisitor(indentSpaceSize: Int) extends Visitor {
 
   override def visit(t: Defn.Type): Unit = {
     buf.append("type ")
-    accept(t.name)
+    t.name.accept(this)
     buf.append(" = ")
-    accept(t.typ)
+    t.typ.accept(this)
     buf.append("\n")
   }
 
   override def visit(t: Term.Name): Unit = buf.append(t.value)
 
   override def visit(t: Term.Field): Unit = {
-    accept(t.name)
+    t.name.accept(this)
     buf.append(": ")
-    accept(t.typ)
+    t.typ.accept(this)
   }
 }

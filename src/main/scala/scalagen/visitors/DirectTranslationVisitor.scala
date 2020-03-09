@@ -21,7 +21,7 @@ class DirectTranslationVisitor extends Visitor {
     val len = t.fields.length
     val a   = t.fields.toArray
     for (i <- t.fields.indices) {
-      accept(a(i))
+      a(i).accept(this)
       if (i != len - 1) {
         buf.append(", ")
       }
@@ -36,18 +36,18 @@ class DirectTranslationVisitor extends Visitor {
 
   override def visit(t: Defn.Type): Unit = {
     buf.append("final case class ")
-    accept(t.name)
+    t.name.accept(this)
     // 組み込み型(Type.Intrinsic)や型名(Type.Name)だった場合は型エイリアスに展開したいが、
     // Type が Struct かそれ以外かで分岐させる必要が出てくる。
-    accept(t.typ)
+    t.typ.accept(this)
     buf.append("\n")
   }
 
   override def visit(t: Term.Name): Unit = buf.append(t.value)
 
   override def visit(t: Term.Field): Unit = {
-    accept(t.name)
+    t.name.accept(this)
     buf.append(": ")
-    accept(t.typ) // Defn.Type と同様で、ネストした Struct の展開が難しい。
+    t.typ.accept(this) // Defn.Type と同様で、ネストした Struct の展開が難しい。
   }
 }

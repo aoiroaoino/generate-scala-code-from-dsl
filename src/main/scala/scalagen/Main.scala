@@ -78,40 +78,40 @@ object Main {
     section("PrintVisitor") {
       comment("まずは雑に print してみる。綺麗にはならないですね。") {
         val v = new PrintVisitor
-        example.trees.foreach(v.accept)
+        example.trees.foreach(_.accept(v))
       }
     }
     section("PrettyPrintVisitor") {
       comment("AST を走査しながら各ノードで文字列を組み立てる。AST から DSL を復元できた。") {
         val v = new PrettyPrintVisitor(indentSpaceSize = 2)
-        example.trees.foreach(v.accept)
+        example.trees.foreach(_.accept(v))
         println(v.result)
       }
       comment("頑張れば簡易的な formatter が作れるかも?") {
         val v = new PrettyPrintVisitor(indentSpaceSize = 8)
-        example.trees.foreach(v.accept)
+        example.trees.foreach(_.accept(v))
         println(v.result)
       }
     }
     section("CollectTermNameVisitor") {
       comment("AST に含まれる Term.Name を全て列挙する。必要な情報を集める、といった使い方も可能。") {
         val v = new CollectTermNameVisitor
-        example.trees.foreach(v.accept)
+        example.trees.foreach(_.accept(v))
         println(v.result)
       }
     }
     section("DirectTranslationVisitor") {
       val v = new DirectTranslationVisitor
       comment("一見問題なく展開できているように見える") {
-        v.accept(example.account)
+        example.account.accept(v)
         println(v.result)
       }
       comment("しかし、シンプルに実装しただけでは型エイリアスへの展開が考慮できない") {
-        v.accept(example.accountId)
+        example.accountId.accept(v)
         println(v.result)
       }
       comment("また、DSL は匿名 Struct を許容するが、これをトップレベルの case class としてうまく切り出すことが難しい") {
-        v.accept(example.user)
+        example.user.accept(v)
         println(v.result)
       }
     }

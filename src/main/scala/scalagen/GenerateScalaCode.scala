@@ -69,7 +69,7 @@ object GenerateScalaCode {
 
       private def err(t: Tree) = sys.error(s"unexpected tree pattern: $t")
     }
-    v.accept(tree)
+    tree.accept(v)
     v.result
   }
 }

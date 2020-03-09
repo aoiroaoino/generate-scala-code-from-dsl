@@ -8,7 +8,7 @@ class PrintVisitor extends Visitor {
   override def visit(t: Type.Struct): Unit = {
     print("{ ")
     t.fields.foreach { field =>
-      accept(field)
+      field.accept(this)
       print(", ")
     }
     print(" }")
@@ -21,17 +21,17 @@ class PrintVisitor extends Visitor {
 
   override def visit(t: Defn.Type): Unit = {
     print("type ")
-    accept(t.name)
+    t.name.accept(this)
     print(" = ")
-    accept(t.typ)
+    t.typ.accept(this)
     println()
   }
 
   override def visit(t: Term.Name): Unit = print(t.value)
 
   override def visit(t: Term.Field): Unit = {
-    accept(t.name)
+    t.name.accept(this)
     print(": ")
-    accept(t.typ)
+    t.typ.accept(this)
   }
 }
