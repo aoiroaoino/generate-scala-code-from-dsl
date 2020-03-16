@@ -1,5 +1,7 @@
 package scalagen
 
+import scalagen.transversers.{IntToFloat, Transformer}
+
 import scala.util.chaining._
 
 object Main {
@@ -115,13 +117,30 @@ object Main {
         println(v.result)
       }
     }
+    section("ModelDrivenTranslationVisitor") {
+      val v = new ModelDrivenTranslationVisitor
+      comment("Functional Visitor + ScalaSource Model でいい感じに出力できるようにはなる") {
+        example.trees.foreach(_.accept(v))
+        println(v.result)
+      }
+    }
 
     // ==============================
     // === Traverser and Transformer
     // ===
     section("CollectTermNameTraverser") {}
 
-    section("IntToFloatTransformer") {}
+    section("IntToFloatTransformer") {
+      comment("Int 型を Float 型に変換する") {
+        comment("before: ") {
+          println(example.accountId)
+        }
+        comment("after: ") {
+          val r = IntToFloat(example.accountId)
+          println(r)
+        }
+      }
+    }
 
     // ==============================
     // === Generate Scala codes

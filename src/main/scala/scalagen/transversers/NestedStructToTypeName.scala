@@ -2,6 +2,8 @@ package scalagen
 package transversers
 
 object NestedStructToTypeName {
+  def run(tree: Tree): Tree              = transformer.transform(tree)
+  def run(trees: List[Tree]): List[Tree] = transformer.transform(trees)
 
   private val transformer =
     new Transformer {
@@ -12,8 +14,4 @@ object NestedStructToTypeName {
           super.transform(tree)
       }
     }
-
-  def run(tree: Tree): Tree = transformer.transform(tree)
-
-  def run(trees: List[Tree]): List[Tree] = transformer.transform(trees)
 }

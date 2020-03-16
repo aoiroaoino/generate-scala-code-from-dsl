@@ -1,87 +1,83 @@
-package scalagen.visitors
+package scalagen
+package visitors
 
-class ModelDrivenTranslationVisitor {}
+import scalagen.util.ScalaReservedWord.escape
 
-//
-//final class ScalaFile() {
-//  import collection.mutable
-//
-//  private[this] var rootPackage = ""
-//  private[this] val typeAliases = mutable.ArrayBuffer.empty[String]
-//  private[this] val classes     = mutable.ArrayBuffer.empty[String]
-//
-//  def setRootPackage(s: String): Unit = rootPackage = s
-//
-//  def addTypeAlias(s: String): Unit = typeAliases += s
-//  def addClass(s: String): Unit     = classes += s
-//
-//  def asString(): String = {
-//    val b = new StringBuilder()
-//    b append rootPackage
-//    b append "\n"
-//    typeAliases.toList.foreach(s => b.append(s + "\n"))
-//    b append "\n"
-//    classes.toList.foreach(s => b.append(s + "\n"))
-//    b.toString()
-//  }
-//
-//  def clear(): Unit = {
-//    rootPackage = ""
-//    typeAliases.clear()
-//    classes.clear()
-//  }
-//}
+import scala.collection.mutable.ArrayBuffer
+import scala.util.chaining._
 
-//class ModelDrivenTranslator {
-//  private val modelFile = new ScalaFile()
-//  modelFile.setRootPackage("package com.example.foo")
-//  private val packageFile = new ScalaFile()
-//  packageFile.setRootPackage("package com.example")
-//
-//  def visit(node: Tree): String = node match {
-//    case t: NamedType => visit(t)
-//    case t: TypeRef   => visit(t)
-//    case t: Struct    => visit(t)
-//    case t: Intrinsic => visit(t)
-//  }
-//
-//  def run(): List[String] = {
-//    val s = modelFile.asString()
-//    val t = packageFile.asString()
-//    modelFile.clear()
-//    packageFile.clear()
-//    List(s, t)
-//  }
-//
-//  protected def visit(t: NamedType): String = t match {
-//    case NamedType(name, tpe: Struct) =>
-//      val caseClass = s"final case class $name${this.visit(tpe)}"
-//      modelFile.addClass(caseClass)
-//      caseClass
-//    case NamedType(name, tpe) =>
-//      val typeAlias = s"type $name = ${this.visit(tpe)}"
-//      packageFile.addTypeAlias(typeAlias)
-//      typeAlias
-//  }
-//  protected def visit(t: Intrinsic): String = t match {
-//    case Intrinsic.Boolean() => "Boolean"
-//    case Intrinsic.Int()     => "Int"
-//    case Intrinsic.String()  => "String"
-//  }
-//
-//  protected def visit(t: Struct): String =
-//    if (t.fields.isEmpty) "()"
-//    else
-//      t.fields
-//        .map {
-//          case (name, tpe: Struct) =>
-//            val typeName = name.capitalize
-//            this.visit(NamedType(typeName, tpe))
-//            s"  $name: $typeName"
-//          case (name, tpe) =>
-//            s"  $name: ${this.visit(tpe)}"
-//        }
-//        .mkString("(\n", ",\n", "\n)")
-//
-//  protected def visit(t: TypeRef): String = t.name
-//}
+class ModelDrivenTranslationVisitor extends FunctionalVisitor[String] {
+  import ModelDrivenTranslationVisitor._
+
+  private[this] val buf = new ScalaSource
+
+  def result: String = buf.asString.tap(_ => buf.clear())
+
+  override def visit(t: Type.Name): String   = t.value
+  override def visit(t: Type.Struct): String = t.fields.map(_.accept(this)).mkString(", ")
+
+  override def visit(t: Type.Intrinsic.Boolean): String = "Boolean"
+  override def visit(t: Type.Intrinsic.String): String  = "String"
+  override def visit(t: Type.Intrinsic.Int): String     = "Int"
+  override def visit(t: Type.Intrinsic.Float): String   = "Float"
+
+  override def visit(t: Defn.Type): String = {
+    t.typ match {
+      case ts: Type.Struct =>
+        val cc = ScalaSource.CaseClass(t.name.value, ts.accept(this))
+        buf.addCaseClass(cc)
+        cc.asString
+      case _ =>
+        val ta = ScalaSource.TypeAlias(t.name.value, t.typ.accept(this))
+        buf.addTypeAlias(ta)
+        ta.asString
+    }
+  }
+
+  override def visit(t: Term.Name): String = escape(t.value)
+
+  override def visit(t: Term.Field): String = {
+    val typeStr = t.typ match {
+      case ts: Type.Struct =>
+        val typeName = t.name.accept(this).capitalize
+        // ネストした Struct を case class として追加する
+        ScalaSource.CaseClass(typeName, ts.accept(this)).tap(buf.addCaseClass)
+        typeName
+      case _ =>
+        t.typ.accept(this)
+    }
+    s"${t.name.accept(this)}: $typeStr"
+  }
+}
+
+object ModelDrivenTranslationVisitor {
+
+  final class ScalaSource {
+    import ScalaSource._
+
+    private[this] val caseClasses = ArrayBuffer.empty[CaseClass]
+    private[this] val typeAliases = ArrayBuffer.empty[TypeAlias]
+
+    def addTypeAlias(typeAlias: TypeAlias): Unit = typeAliases += typeAlias
+    def addCaseClass(caseClass: CaseClass): Unit = caseClasses += caseClass
+
+    def asString: String =
+      typeAliases.map(_.asString).mkString("\n") + "\n" + caseClasses.map(_.asString).mkString("\n")
+
+    def clear(): Unit = {
+      typeAliases.clear()
+      caseClasses.clear()
+    }
+  }
+  object ScalaSource {
+    final case class CaseClass(name: String, ctorFields: String) {
+      require(ctorFields.nonEmpty)
+      def asString: String = {
+        s"final case class $name($ctorFields)"
+      }
+    }
+    final case class TypeAlias(name: String, typ: String) {
+      def asString: String = s"type $name = $typ"
+    }
+  }
+}
